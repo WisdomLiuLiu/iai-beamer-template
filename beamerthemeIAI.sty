@@ -1,0 +1,148 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeIAI}[2026/10/20 Minimal IAI presentation theme]
+\RequirePackage[T1]{fontenc}
+\RequirePackage{times}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{newtxtext,newtxmath}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\definecolor{IAIBlue}{HTML}{07528C}
+\definecolor{IAIInk}{HTML}{202C38}
+\definecolor{IAIMuted}{HTML}{687582}
+\definecolor{IAILogoTile}{HTML}{D2E5F4}
+\mode<presentation>
+\usefonttheme{professionalfonts}
+\usefonttheme{serif}
+% Body text: the 11pt class's normal Times/newtx size.
+\setbeamerfont{normal text}{family=\rmfamily,size=\normalsize,series=\mdseries}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+\setbeamerfont{block body}{size=\normalsize}
+\linespread{0.96}
+\hypersetup{unicode=true,colorlinks=true,linkcolor=IAIMuted,urlcolor=IAIBlue,citecolor=IAIBlue}
+\AtBeginDocument{%
+  \usebeamerfont{normal text}%
+  \setlength{\parskip}{2pt}%
+  \setlength{\abovedisplayskip}{4pt}%
+  \setlength{\belowdisplayskip}{4pt}%
+  \setlength{\abovedisplayshortskip}{2pt}%
+  \setlength{\belowdisplayshortskip}{2pt}}
+\setbeamercolor{normal text}{fg=IAIInk,bg=white}
+\setbeamercolor{structure}{fg=IAIBlue}
+\setbeamercolor{alerted text}{fg=IAIBlue}
+\setbeamercolor{frametitle}{fg=IAIInk,bg=white}
+\setbeamercolor{footline}{fg=IAIInk,bg=white}
+\setbeamercolor{block title}{fg=IAIInk,bg=white}
+\setbeamercolor{block body}{fg=IAIInk,bg=white}
+\setbeamerfont{frametitle}{size=\fontsize{16}{18},series=\bfseries}
+\setbeamerfont{footline}{size=\fontsize{11}{13},series=\bfseries}
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamerfont{section in toc}{size=\normalsize,series=\mdseries}
+\setbeamercolor{section in toc}{fg=black}
+\setbeamersize{text margin left=0.85cm,text margin right=0.85cm}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{headline}{}
+\setbeamertemplate{itemize item}{\raisebox{0.15ex}{\scriptsize\textbullet}}
+\setbeamertemplate{itemize subitem}{\small\textendash}
+\setbeamertemplate{blocks}[default]
+\addtobeamertemplate{itemize/enumerate body begin}{%
+  \setlength{\itemsep}{3pt}\setlength{\parsep}{0pt}\setlength{\topsep}{3pt}}{}
+\newsavebox{\IAIHeaderTextBox}
+\newsavebox{\IAIHeaderLogoBox}
+\newsavebox{\IAISectionLineBox}
+\newsavebox{\IAISlideTitleBox}
+\newlength{\IAIHeaderHeight}
+\newlength{\IAILogoTileSize}
+\newlength{\IAILogoTileLeft}
+\newlength{\IAILogoTileHeight}
+\newlength{\IAIPageNumberDepth}
+\setbeamertemplate{frametitle}{%
+  % Measure the two-line text block and use the same height for the emblem.
+  \sbox{\IAIHeaderTextBox}{%
+    \begin{minipage}{12.8cm}
+      \raggedright\setlength{\parskip}{0pt}
+      {\fontsize{10}{11}\selectfont\mdseries\color{black}\hypersetup{linkcolor=black}%
+        \insertsectionhead\par}
+      \vspace{2pt}
+      {\usebeamerfont{frametitle}\color{IAIInk}\insertframetitle\par}
+    \end{minipage}}
+  \setlength{\IAIHeaderHeight}{\dimexpr\ht\IAIHeaderTextBox+\dp\IAIHeaderTextBox\relax}
+  \sbox{\IAISectionLineBox}{\fontsize{10}{11}\selectfont\mdseries
+    \insertsectionhead}
+  \sbox{\IAISlideTitleBox}{\usebeamerfont{frametitle}\insertframetitle}
+  % Center the page marker in the gap between the actual two text lines,
+  % rather than at the vertical center of the full header block.
+  \setlength{\IAIPageNumberDepth}{\dimexpr0.78cm+
+    (\ht\IAISectionLineBox+\dp\IAISectionLineBox-
+     \ht\IAISlideTitleBox-\dp\IAISlideTitleBox)/2\relax}
+  \sbox{\IAIHeaderLogoBox}{\includegraphics[height=\IAIHeaderHeight]{assets/iai-logo-footer.png}}
+  % Keep the accepted width and add 1.4 mm of clearance below the emblem.
+  \setlength{\IAILogoTileSize}{\dimexpr0.78cm+\IAIHeaderHeight/2\relax}
+  \setlength{\IAILogoTileLeft}{\dimexpr0.85cm+\wd\IAIHeaderLogoBox/2-\IAILogoTileSize/2\relax}
+  \setlength{\IAILogoTileHeight}{\dimexpr\IAILogoTileSize+0.14cm\relax}
+  \begin{tikzpicture}[remember picture,overlay]
+      \fill[IAILogoTile]
+        ([xshift=\IAILogoTileLeft]current page.north west) rectangle
+        ([xshift=\dimexpr\IAILogoTileLeft+\IAILogoTileSize\relax,yshift=-\IAILogoTileHeight]current page.north west);
+      \node[anchor=east,inner sep=0,text=IAIInk]
+        at ([xshift=-0.85cm,yshift=-\IAIPageNumberDepth]current page.north east)
+        {\usebeamerfont{footline}\IAIPageNumber};
+    \node[anchor=west,inner sep=0]
+      at ([xshift=0.85cm,yshift=-0.78cm]current page.north west)
+      {\usebox{\IAIHeaderLogoBox}};
+    \node[anchor=west,inner sep=0]
+      at ([xshift=\dimexpr0.85cm+\wd\IAIHeaderLogoBox+0.25cm\relax,yshift=-0.78cm]current page.north west)
+      {\usebox{\IAIHeaderTextBox}};
+  \end{tikzpicture}
+  \vspace*{1.15cm}}
+\newcommand{\IAIPageNumber}{\insertpagenumber\, /\,\insertdocumentendpage}
+\setbeamertemplate{background}{%
+    \ifx\insertframetitle\@empty
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=east,inner sep=0,text=IAIInk]
+        at ([xshift=-0.85cm,yshift=-0.62cm]current page.north east)
+        {\usebeamerfont{footline}\IAIPageNumber};
+    \end{tikzpicture}
+    \fi
+  }
+\setbeamertemplate{footline}{%
+  \hspace*{0.85cm}%
+  \begin{beamercolorbox}[wd=\dimexpr\paperwidth-1.7cm\relax,ht=0.36cm,dp=0.16cm]{footline}
+    \strut
+  \end{beamercolorbox}}
+
+% Cover: only original logo, title, author, meeting and date.
+% Every element shares the same left edge, 0.85 cm from the page boundary.
+\newcommand{\IAITitlePage}{%
+  \begin{frame}[plain,noframenumbering]
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=north west,inner sep=0] at ([xshift=0.85cm,yshift=-0.75cm]current page.north west)
+        {\includegraphics[width=9cm]{assets/iai-logo.png}};
+      \node[anchor=north west,text width=14.3cm,inner sep=0,align=left,text=IAIInk]
+        at ([xshift=0.85cm,yshift=-3.15cm]current page.north west)
+        {{\fontsize{18}{21}\selectfont\bfseries\raggedright\inserttitle\par}};
+      \node[anchor=north west,text width=14.3cm,inner sep=0,align=left,text=IAIInk]
+        at ([xshift=0.85cm,yshift=-5.15cm]current page.north west)
+        {{\fontsize{14}{16}\selectfont\insertauthor\par}};
+      \node[anchor=south west,text width=14.3cm,inner sep=0,align=left,text=IAIMuted]
+        at ([xshift=0.85cm,yshift=0.65cm]current page.south west)
+        {{\fontsize{10}{13}\selectfont\MeetingName\enspace\textbar\enspace\insertdate\par}};
+    \end{tikzpicture}
+  \end{frame}}
+\newcommand{\IAIOutline}{%
+  \begin{frame}
+    \vspace{0pt}
+    {\fontsize{20}{23}\selectfont\mdseries\color{black}Outline\par}
+    \vspace{0.23cm}
+    {\hypersetup{linkcolor=black}\setbeamercolor{structure}{fg=black}%
+     \color{black}\mdseries\tableofcontents[hideallsubsections]}
+  \end{frame}}
+\newcommand{\IAISectionPage}{%
+  \begin{frame}
+    \vspace{0.2cm}
+    {\fontsize{24}{27}\selectfont\bfseries\raggedright
+     \hypersetup{linkcolor=IAIInk}\color{IAIInk}\insertsectionhead\par}
+  \end{frame}}
+\mode<all>

@@ -8,11 +8,13 @@ Overleaf 使用
 
 日常编辑只需修改 main.tex：
 - 修改标题、作者、会议名称和日期。
+- 长标题按可用宽度自动换行，不需要手动插入 \\；正文页眉为页码预留空间。
 - 用 \section{Section title} 添加章节，目录及正文页眉第一行自动更新。
 - 需要章节过渡页时，在 \section 后加 \IAISectionPage；否则可省略。
 - 复制 \begin{frame}{Slide title} ... \end{frame} 添加正文页。
 - 正文和各级列表已统一为默认字号，无需逐页添加 \large。
 - 正文字体为 newtxtext/newtxmath，使用 11pt 文档字号与紧凑行距。
+- 目录条目直接继承正文的字体与字号，正文样式调整后会同步更新。
 - 如需额外的表格或绘图功能，可在 main.tex 导言区添加相应宏包。
 
 文件

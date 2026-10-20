@@ -5,6 +5,9 @@
 \RequirePackage{amsmath,amssymb}
 \RequirePackage{newtxtext,newtxmath}
 \RequirePackage{graphicx}
+\RequirePackage{ragged2e}
+% Allow a natural ragged edge without splitting words in long titles.
+\setlength{\RaggedRightRightskip}{0pt plus 5em}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \definecolor{IAIBlue}{HTML}{07528C}
@@ -39,7 +42,8 @@
 \setbeamerfont{frametitle}{size=\fontsize{16}{18},series=\bfseries}
 \setbeamerfont{footline}{size=\fontsize{11}{13},series=\bfseries}
 \setbeamertemplate{section in toc}[sections numbered]
-\setbeamerfont{section in toc}{size=\normalsize,series=\mdseries}
+\setbeamerfont*{section in toc}{parent=normal text}
+\setbeamerfont*{subsection in toc}{parent=normal text}
 \setbeamercolor{section in toc}{fg=black}
 \setbeamersize{text margin left=0.85cm,text margin right=0.85cm}
 \setbeamertemplate{navigation symbols}{}
@@ -53,50 +57,75 @@
 \newsavebox{\IAIHeaderLogoBox}
 \newsavebox{\IAISectionLineBox}
 \newsavebox{\IAISlideTitleBox}
+\newsavebox{\IAIPageNumberBox}
 \newlength{\IAIHeaderHeight}
+\newlength{\IAIHeaderBaseHeight}
+\newlength{\IAIHeaderTop}
+\newlength{\IAIHeaderTextWidth}
 \newlength{\IAILogoTileSize}
 \newlength{\IAILogoTileLeft}
 \newlength{\IAILogoTileHeight}
 \newlength{\IAIPageNumberDepth}
-\setbeamertemplate{frametitle}{%
-  % Measure the two-line text block and use the same height for the emblem.
+\newcount\IAIHeaderPass
+\newcommand{\IAIMeasureHeader}{%
   \sbox{\IAIHeaderTextBox}{%
-    \begin{minipage}{12.8cm}
-      \raggedright\setlength{\parskip}{0pt}
+    \begin{minipage}{\IAIHeaderTextWidth}
+      \RaggedRight\hyphenpenalty=10000\setlength{\parskip}{0pt}
       {\fontsize{10}{11}\selectfont\mdseries\color{black}\hypersetup{linkcolor=black}%
         \insertsectionhead\par}
       \vspace{2pt}
-      {\usebeamerfont{frametitle}\color{IAIInk}\insertframetitle\par}
+      {\usebeamerfont{frametitle}\color{IAIInk}%
+        % Reserve the page marker only on the first title line.
+        \parshape 2 0pt \dimexpr\linewidth-\wd\IAIPageNumberBox-0.25cm\relax
+                    0pt \linewidth
+        \insertframetitle\par}
     \end{minipage}}
   \setlength{\IAIHeaderHeight}{\dimexpr\ht\IAIHeaderTextBox+\dp\IAIHeaderTextBox\relax}
-  \sbox{\IAISectionLineBox}{\fontsize{10}{11}\selectfont\mdseries
-    \insertsectionhead}
+  \sbox{\IAIHeaderLogoBox}{\includegraphics[height=\IAIHeaderHeight]{assets/iai-logo-footer.png}}}
+\setbeamertemplate{frametitle}{%
+  \sbox{\IAISectionLineBox}{\fontsize{10}{11}\selectfont\mdseries\insertsectionhead}
   \sbox{\IAISlideTitleBox}{\usebeamerfont{frametitle}\insertframetitle}
-  % Center the page marker in the gap between the actual two text lines,
-  % rather than at the vertical center of the full header block.
+  \sbox{\IAIPageNumberBox}{\usebeamerfont{footline}\IAIPageNumber}
+  % Keep the accepted top edge and number position when a title wraps.
+  \sbox{\IAIHeaderTextBox}{%
+    \begin{minipage}{\dimexpr\paperwidth-1.7cm\relax}
+      \setlength{\parskip}{0pt}
+      {\fontsize{10}{11}\selectfont\vphantom{\usebox{\IAISectionLineBox}}\par}
+      \vspace{2pt}
+      {\usebeamerfont{frametitle}\vphantom{\usebox{\IAISlideTitleBox}}\par}
+    \end{minipage}}
+  \setlength{\IAIHeaderBaseHeight}{\dimexpr\ht\IAIHeaderTextBox+\dp\IAIHeaderTextBox\relax}
+  \setlength{\IAIHeaderTop}{\dimexpr0.78cm-\IAIHeaderBaseHeight/2\relax}
   \setlength{\IAIPageNumberDepth}{\dimexpr0.78cm+
     (\ht\IAISectionLineBox+\dp\IAISectionLineBox-
      \ht\IAISlideTitleBox-\dp\IAISlideTitleBox)/2\relax}
-  \sbox{\IAIHeaderLogoBox}{\includegraphics[height=\IAIHeaderHeight]{assets/iai-logo-footer.png}}
-  % Keep the accepted width and add 1.4 mm of clearance below the emblem.
-  \setlength{\IAILogoTileSize}{\dimexpr0.78cm+\IAIHeaderHeight/2\relax}
-  \setlength{\IAILogoTileLeft}{\dimexpr0.85cm+\wd\IAIHeaderLogoBox/2-\IAILogoTileSize/2\relax}
-  \setlength{\IAILogoTileHeight}{\dimexpr\IAILogoTileSize+0.14cm\relax}
+  % Reflow to the right margin after measuring the full-height emblem.
+  \setlength{\IAIHeaderTextWidth}{\dimexpr\paperwidth-1.7cm\relax}
+  \IAIHeaderPass=0
+  \loop
+    \IAIMeasureHeader
+    \setlength{\IAIHeaderTextWidth}{\dimexpr\paperwidth-1.7cm-\wd\IAIHeaderLogoBox-0.25cm\relax}
+    \advance\IAIHeaderPass by 1
+  \ifnum\IAIHeaderPass<6\repeat
+  \IAIMeasureHeader
+  \setlength{\IAILogoTileSize}{\dimexpr\wd\IAIHeaderLogoBox+0.28cm\relax}
+  \setlength{\IAILogoTileLeft}{0.71cm}
+  \setlength{\IAILogoTileHeight}{\dimexpr\IAIHeaderTop+\IAIHeaderHeight+0.14cm\relax}
   \begin{tikzpicture}[remember picture,overlay]
-      \fill[IAILogoTile]
-        ([xshift=\IAILogoTileLeft]current page.north west) rectangle
-        ([xshift=\dimexpr\IAILogoTileLeft+\IAILogoTileSize\relax,yshift=-\IAILogoTileHeight]current page.north west);
-      \node[anchor=east,inner sep=0,text=IAIInk]
-        at ([xshift=-0.85cm,yshift=-\IAIPageNumberDepth]current page.north east)
-        {\usebeamerfont{footline}\IAIPageNumber};
-    \node[anchor=west,inner sep=0]
-      at ([xshift=0.85cm,yshift=-0.78cm]current page.north west)
+    \fill[IAILogoTile]
+      ([xshift=\IAILogoTileLeft]current page.north west) rectangle
+      ([xshift=\dimexpr\IAILogoTileLeft+\IAILogoTileSize\relax,yshift=-\IAILogoTileHeight]current page.north west);
+    \node[anchor=east,inner sep=0,text=IAIInk]
+      at ([xshift=-0.85cm,yshift=-\IAIPageNumberDepth]current page.north east)
+      {\usebox{\IAIPageNumberBox}};
+    \node[anchor=north west,inner sep=0]
+      at ([xshift=0.85cm,yshift=-\IAIHeaderTop]current page.north west)
       {\usebox{\IAIHeaderLogoBox}};
-    \node[anchor=west,inner sep=0]
-      at ([xshift=\dimexpr0.85cm+\wd\IAIHeaderLogoBox+0.25cm\relax,yshift=-0.78cm]current page.north west)
+    \node[anchor=north west,inner sep=0]
+      at ([xshift=\dimexpr0.85cm+\wd\IAIHeaderLogoBox+0.25cm\relax,yshift=-\IAIHeaderTop]current page.north west)
       {\usebox{\IAIHeaderTextBox}};
   \end{tikzpicture}
-  \vspace*{1.15cm}}
+  \vspace*{\dimexpr1.15cm+\IAIHeaderHeight-\IAIHeaderBaseHeight\relax}}
 \newcommand{\IAIPageNumber}{\insertpagenumber\, /\,\insertdocumentendpage}
 \setbeamertemplate{background}{%
     \ifx\insertframetitle\@empty
@@ -120,13 +149,13 @@
     \begin{tikzpicture}[remember picture,overlay]
       \node[anchor=north west,inner sep=0] at ([xshift=0.85cm,yshift=-0.75cm]current page.north west)
         {\includegraphics[width=9cm]{assets/iai-logo.png}};
-      \node[anchor=north west,text width=14.3cm,inner sep=0,align=left,text=IAIInk]
+      \node[anchor=north west,text width=\dimexpr\paperwidth-1.7cm\relax,inner sep=0,align=left,text=IAIInk]
         at ([xshift=0.85cm,yshift=-3.15cm]current page.north west)
-        {{\fontsize{18}{21}\selectfont\bfseries\raggedright\inserttitle\par}};
-      \node[anchor=north west,text width=14.3cm,inner sep=0,align=left,text=IAIInk]
+        {{\fontsize{18}{21}\selectfont\bfseries\RaggedRight\hyphenpenalty=10000\inserttitle\par}};
+      \node[anchor=north west,text width=\dimexpr\paperwidth-1.7cm\relax,inner sep=0,align=left,text=IAIInk]
         at ([xshift=0.85cm,yshift=-5.15cm]current page.north west)
         {{\fontsize{14}{16}\selectfont\insertauthor\par}};
-      \node[anchor=south west,text width=14.3cm,inner sep=0,align=left,text=IAIMuted]
+      \node[anchor=south west,text width=\dimexpr\paperwidth-1.7cm\relax,inner sep=0,align=left,text=IAIMuted]
         at ([xshift=0.85cm,yshift=0.65cm]current page.south west)
         {{\fontsize{10}{13}\selectfont\MeetingName\enspace\textbar\enspace\insertdate\par}};
     \end{tikzpicture}
@@ -137,7 +166,7 @@
     {\fontsize{20}{23}\selectfont\mdseries\color{black}Outline\par}
     \vspace{0.23cm}
     {\hypersetup{linkcolor=black}\setbeamercolor{structure}{fg=black}%
-     \color{black}\mdseries\tableofcontents[hideallsubsections]}
+     \usebeamerfont{normal text}\color{black}\mdseries\tableofcontents[hideallsubsections]}
   \end{frame}}
 \newcommand{\IAISectionPage}{%
   \begin{frame}
